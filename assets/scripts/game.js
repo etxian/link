@@ -38,7 +38,7 @@ cc.Class({
         moveMin: 0,
         moveMax: 0,
         originalX: 0,
-        originalY: 0
+        originalY: 0,
     },
 
     // LIFE-CYCLE CALLBACKS:
@@ -62,20 +62,18 @@ cc.Class({
                 newNode.getComponent(cc.Sprite).spriteFrame = this.spriteFrames[Math.trunc((i * this.rows + j) / 4)]
                 this._paiSprites[i][j] = newNode
                 this.node.addChild(newNode)
-                newNode.setPosition(cc.v2(this.paiWidth * j, this.paiHeight * i))
-                newNode.setScale(cc.v2(0.45, 0.45))
-                newNode.on(cc.Node.EventType.TOUCH_END, function(event) {
-                    this.onTouchEnd(event, self)
-                }, this)
-                newNode.on(cc.Node.EventType.TOUCH_START, function(event) {
-                    this.onTouchStart(event, self)
-                }, this)
-                newNode.on(cc.Node.EventType.TOUCH_MOVE, function(event) {
-                    this.onTouchMove(event, self)
-                }, this)
+                newNode.setPosition(cc.v2(this.paiWidth * j - this.paddingLeft, this.paiHeight * i - this.paddingTop))
             }
         }
-
+        this.node.on(cc.Node.EventType.TOUCH_END, function(event) {
+            this.onTouchEnd(event, self)
+        }, this)
+        this.node.on(cc.Node.EventType.TOUCH_START, function(event) {
+            this.onTouchStart(event, self)
+        }, this)
+        this.node.on(cc.Node.EventType.TOUCH_MOVE, function(event) {
+            this.onTouchMove(event, self)
+        }, this)
         var paisStorage = cc.sys.localStorage.getItem('pais')
         if (paisStorage != null) {
             var pais = paisStorage.split(' ')
@@ -102,7 +100,9 @@ cc.Class({
     },
 
     onTouchStart (event, self) {
-        var currentPai = event.target
+        // cc.log(cc.view.getFrameSize().width + ", " + cc.view.getFrameSize().height)
+        // cc.log(event.getLocationX() + ", " + event.getLocationY())
+        var currentPai = self._paiSprites[Math.floor(event.getLocationY() / this.paiHeight)][Math.floor(event.getLocationX() / this.paiWidth)]
         if (self._lastPai != null) {
             self._lastPai.color = cc.Color.WHITE
             if (currentPai.getComponent('Pai').type === self._lastPai.getComponent('Pai').type && currentPai != self._lastPai) {
@@ -202,7 +202,11 @@ cc.Class({
                 }
                 if (match) {
                     currentPai.getComponent(cc.Sprite).spriteFrame = self.spriteFrames[34]
+                    currentPai.width = this.paiWidth
+                    currentPai.height = this.paiHeight
                     self._lastPai.getComponent(cc.Sprite).spriteFrame = self.spriteFrames[34]
+                    self._lastPai.width = this.paiWidth
+                    self._lastPai.height = this.paiHeight
                     currentPai.getComponent('Pai').type = -1
                     self._lastPai.getComponent('Pai').type = -1
                     currentPai.color = cc.Color.WHITE
@@ -292,18 +296,20 @@ cc.Class({
 
             if (self.moveDirection === 0) {
                 var row = self._lastPai.getComponent('Pai').x
-                if ((delta.x > 0 && self._paiSprites[row][self.moveEnd].x + delta.x <= self.moveMax * self.paiWidth)
-                    || (delta.x < 0 && self._paiSprites[row][self.moveStart].x + delta.x >= self.moveMin * self.paiWidth)) {
+                if ((delta.x > 0 && self._paiSprites[row][self.moveEnd].x + delta.x <= self.moveMax * self.paiWidth - self.paddingLeft)
+                    || (delta.x < 0 && self._paiSprites[row][self.moveStart].x + delta.x >= self.moveMin * self.paiWidth - self.paddingLeft)) {
                     for (var j = self.moveStart; j <= self.moveEnd; j++) {
                         self._paiSprites[row][j].x += delta.x
+                        self._paiSprites[row][j].zIndex = 1000
                     }
                 }
             } else {
                 var column = self._lastPai.getComponent('Pai').y
-                if ((delta.y > 0 && self._paiSprites[self.moveEnd][column].y + delta.y <= self.moveMax * self.paiHeight)
-                    || (delta.y < 0 && self._paiSprites[self.moveStart][column].y + delta.y >= self.moveMin * self.paiHeight)) {
+                if ((delta.y > 0 && self._paiSprites[self.moveEnd][column].y + delta.y <= self.moveMax * self.paiHeight - self.paddingTop)
+                    || (delta.y < 0 && self._paiSprites[self.moveStart][column].y + delta.y >= self.moveMin * self.paiHeight - self.paddingTop)) {
                     for (var i = self.moveStart; i <= self.moveEnd; i++) {
                         self._paiSprites[i][column].y += delta.y
+                        self._paiSprites[i][column].zIndex = 1000
                     }
                 }
             }
@@ -315,7 +321,7 @@ cc.Class({
         if (self.moveDirection === 0) {
             var row = self._lastPai.getComponent('Pai').x
             var column = self._lastPai.getComponent('Pai').y
-            var currentX = Math.round(self._lastPai.x / self.paiWidth)
+            var currentX = Math.round((self._lastPai.x + this.paddingLeft) / self.paiWidth)
             var delta = currentX - column
             var matchFound = false
             // cc.log('column: ' + column)
@@ -377,17 +383,21 @@ cc.Class({
                         //cc.log("x: " + row + ", y: " + (j + delta) + ", from: " + self._paiSprites[row][j + delta].getComponent('Pai').type + ", to: " + self._paiSprites[row][j].getComponent('Pai').type)
                         self._paiSprites[row][j + delta].getComponent('Pai').type = self._paiSprites[row][j].getComponent('Pai').type
                         self._paiSprites[row][j + delta].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[self._paiSprites[row][j].getComponent('Pai').type]
+                        self._paiSprites[row][j + delta].width = self.paiWidth
+                        self._paiSprites[row][j + delta].height = self.paiHeight
                         if (j < self.moveStart + delta) {
                             self._paiSprites[row][j].getComponent('Pai').type = -1
                             self._paiSprites[row][j].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[34]
                         }
                         //cc.log('set row: ' + row + ', j: ' + j + " to " + self._paiSprites[row][j].getComponent('Pai').x)
-                        self._paiSprites[row][j].x = self._paiSprites[row][j].getComponent('Pai').y * self.paiWidth
+                        self._paiSprites[row][j].x = self._paiSprites[row][j].getComponent('Pai').y * self.paiWidth - self.paddingLeft
                         self._paiSprites[row][j].zIndex = 0
+                        self._paiSprites[row][j].width = self.paiWidth
+                        self._paiSprites[row][j].height = self.paiHeight
                     }
                 } else {
                     for (var j = self.moveStart; j <= self.moveEnd; j++) {
-                        self._paiSprites[row][j].x = self._paiSprites[row][j].getComponent('Pai').y * self.paiWidth
+                        self._paiSprites[row][j].x = self._paiSprites[row][j].getComponent('Pai').y * self.paiWidth - self.paddingLeft
                         self._paiSprites[row][j].zIndex = 0
                     }
                 }
@@ -447,17 +457,21 @@ cc.Class({
                         //cc.log("x: " + row + ", y: " + (j + delta) + ", from: " + self._paiSprites[row][j + delta].getComponent('Pai').type + ", to: " + self._paiSprites[row][j].getComponent('Pai').type)
                         self._paiSprites[row][j + delta].getComponent('Pai').type = self._paiSprites[row][j].getComponent('Pai').type
                         self._paiSprites[row][j + delta].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[self._paiSprites[row][j].getComponent('Pai').type]
+                        self._paiSprites[row][j + delta].width = self.paiWidth
+                        self._paiSprites[row][j + delta].height = self.paiHeight
                         if (j > self.moveEnd + delta) {
                             self._paiSprites[row][j].getComponent('Pai').type = -1
                             self._paiSprites[row][j].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[34]
                         }
                         //cc.log('set row: ' + row + ', j: ' + j + " to " + self._paiSprites[row][j].getComponent('Pai').x)
-                        self._paiSprites[row][j].x = self._paiSprites[row][j].getComponent('Pai').y * self.paiWidth
+                        self._paiSprites[row][j].x = self._paiSprites[row][j].getComponent('Pai').y * self.paiWidth - self.paddingLeft
                         self._paiSprites[row][j].zIndex = 0
+                        self._paiSprites[row][j].width = self.paiWidth
+                        self._paiSprites[row][j].height = self.paiHeight
                     }
                 } else {
                     for (var j = self.moveStart; j <= self.moveEnd; j++) {
-                        self._paiSprites[row][j].x = self._paiSprites[row][j].getComponent('Pai').y * self.paiWidth
+                        self._paiSprites[row][j].x = self._paiSprites[row][j].getComponent('Pai').y * self.paiWidth - self.paddingLeft
                         self._paiSprites[row][j].zIndex = 0
                     }
                 }
@@ -465,7 +479,7 @@ cc.Class({
         } else if (self.moveDirection === 1) {
             var row = self._lastPai.getComponent('Pai').x
             var column = self._lastPai.getComponent('Pai').y
-            var currentY = Math.round(self._lastPai.y / self.paiHeight)
+            var currentY = Math.round((self._lastPai.y + self.paddingTop) / self.paiHeight)
             var delta = currentY - row
             var matchFound = false
             cc.log('row: ' + row)
@@ -527,17 +541,21 @@ cc.Class({
                         //cc.log("x: " + i + ", y: " + (j + delta) + ", from: " + self._paiSprites[row][j + delta].getComponent('Pai').type + ", to: " + self._paiSprites[row][j].getComponent('Pai').type)
                         self._paiSprites[i + delta][column].getComponent('Pai').type = self._paiSprites[i][column].getComponent('Pai').type
                         self._paiSprites[i + delta][column].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[self._paiSprites[i][column].getComponent('Pai').type]
+                        self._paiSprites[i + delta][column].width = self.paiWidth
+                        self._paiSprites[i + delta][column].height = self.paiHeight
                         if (i < self.moveStart + delta) {
                             self._paiSprites[i][column].getComponent('Pai').type = -1
                             self._paiSprites[i][column].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[34]
                         }
                         //cc.log('set row: ' + row + ', j: ' + j + " to " + self._paiSprites[row][j].getComponent('Pai').x)
-                        self._paiSprites[i][column].y = self._paiSprites[i][column].getComponent('Pai').x * self.paiHeight
+                        self._paiSprites[i][column].y = self._paiSprites[i][column].getComponent('Pai').x * self.paiHeight - self.paddingTop
                         self._paiSprites[i][column].zIndex = 0
+                        self._paiSprites[i][column].width = self.paiWidth
+                        self._paiSprites[i][column].height = self.paiHeight
                     }
                 } else {
                     for (var i = self.moveStart; i <= self.moveEnd; i++) {
-                        self._paiSprites[i][column].y = self._paiSprites[i][column].getComponent('Pai').x * self.paiHeight
+                        self._paiSprites[i][column].y = self._paiSprites[i][column].getComponent('Pai').x * self.paiHeight - self.paddingTop
                         self._paiSprites[i][column].zIndex = 0
                     }
                 }
@@ -603,17 +621,21 @@ cc.Class({
                         //cc.log("x: " + row + ", y: " + (j + delta) + ", from: " + self._paiSprites[row][j + delta].getComponent('Pai').type + ", to: " + self._paiSprites[row][j].getComponent('Pai').type)
                         self._paiSprites[i + delta][column].getComponent('Pai').type = self._paiSprites[i][column].getComponent('Pai').type
                         self._paiSprites[i + delta][column].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[self._paiSprites[i][column].getComponent('Pai').type]
+                        self._paiSprites[i + delta][column].width = self.paiWidth
+                        self._paiSprites[i + delta][column].height = self.paiHeight
                         if (i > self.moveEnd + delta) {
                             self._paiSprites[i][column].getComponent('Pai').type = -1
                             self._paiSprites[i][column].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[34]
                         }
                         //cc.log('set row: ' + row + ', j: ' + j + " to " + self._paiSprites[row][j].getComponent('Pai').x)
-                        self._paiSprites[i][column].y = self._paiSprites[i][column].getComponent('Pai').x * self.paiHeight
+                        self._paiSprites[i][column].y = self._paiSprites[i][column].getComponent('Pai').x * self.paiHeight - self.paddingTop
                         self._paiSprites[i][column].zIndex = 0
+                        self._paiSprites[i][column].width = self.paiWidth
+                        self._paiSprites[i][column].height = self.paiHeight
                     }
                 } else {
                     for (var i = self.moveStart; i <= self.moveEnd; i++) {
-                        self._paiSprites[i][column].y = self._paiSprites[i][column].getComponent('Pai').x * self.paiHeight
+                        self._paiSprites[i][column].y = self._paiSprites[i][column].getComponent('Pai').x * self.paiHeight - self.paddingTop
                         self._paiSprites[i][column].zIndex = 0
                     }
                 }
@@ -649,6 +671,8 @@ cc.Class({
                 this._paiSprites[i][j].getComponent('Pai').type = array[i * this.columns + j]
                 this._paiSprites[i][j].getComponent('Pai').x = i
                 this._paiSprites[i][j].getComponent('Pai').y = j
+                this._paiSprites[i][j].width = this.paiWidth
+                this._paiSprites[i][j].height = this.paiHeight
             }
         }
     },

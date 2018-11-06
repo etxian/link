@@ -5,10 +5,10 @@
       "main": true,
       "url": "app://editor/index.html",
       "windowType": "dockable",
-      "x": -1680,
+      "x": 0,
       "y": 23,
-      "width": 1680,
-      "height": 1027,
+      "width": 1920,
+      "height": 1057,
       "layout": {
         "children": [
           {
@@ -100,7 +100,7 @@
         "scene"
       ]
     },
-    "window-1541339616257": {},
+    "window-1541472171464": {},
     "worker": {}
   },
   "panels": {

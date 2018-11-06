@@ -425,8 +425,8 @@
     "relativePath": "scenes"
   },
   "1fc5f44f-539a-4316-a523-d0adaf39cb5d": {
-    "asset": 1541338239076,
-    "meta": 1541338239091,
+    "asset": 1541472166741,
+    "meta": 1541472166747,
     "relativePath": "scenes/game.fire"
   },
   "15a56eef-08da-44c1-8702-5438611d1c54": {
@@ -455,8 +455,8 @@
     "relativePath": "textures/34.png"
   },
   "0751e630-ff6d-48c1-b547-36b32b3bbb8c": {
-    "asset": 1541339606770,
-    "meta": 1541339613231,
+    "asset": 1541472093173,
+    "meta": 1541472165601,
     "relativePath": "scripts/game.js"
   }
 }
