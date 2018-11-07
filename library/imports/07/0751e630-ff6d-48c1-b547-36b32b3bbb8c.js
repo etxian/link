@@ -2,7 +2,7 @@
 cc._RF.push(module, '0751eYw/21IwbVHNrMrO7uM', 'game');
 // scripts/game.js
 
-'use strict';
+"use strict";
 
 cc.Class({
     extends: cc.Component,
@@ -18,9 +18,18 @@ cc.Class({
             type: [cc.SpriteFrame]
         },
 
+        tutorial: {
+            default: null,
+            type: cc.Node
+        },
+
+        startButton: {
+            default: null,
+            type: cc.Button
+        },
         _paiSprites: {
             default: [],
-            type: [cc.node]
+            type: [cc.Node]
         },
 
         _pais: null,
@@ -50,6 +59,63 @@ cc.Class({
     // LIFE-CYCLE CALLBACKS:
 
     onLoad: function onLoad() {
+        // this._pais = new Array()
+        // this._paiSprites = new Array()
+        // for (var i = 0; i < this.rows; i++) {
+        //     this._pais[i] = new Array(i)
+        //     this._paiSprites[i] = new Array(i)
+        //     for (var j = 0; j < this.columns; j++) {
+        //         this._pais[i][j] = -1
+        //         this._paiSprites[i][j] = null
+        //     }
+        // }
+
+        // var self = this
+        // for (var i = 0; i < this.rows; i++) {
+        //     for (var j = 0; j < this.columns; j++) {
+        //         var newNode = cc.instantiate(this.paiPrefab)
+        //         newNode.getComponent(cc.Sprite).spriteFrame = this.spriteFrames[Math.trunc((i * this.rows + j) / 4)]
+        //         this._paiSprites[i][j] = newNode
+        //         this.node.addChild(newNode)
+        //         newNode.setPosition(cc.v2(this.paiWidth * j - this.paddingLeft, this.paiHeight * i - this.paddingTop))
+        //     }
+        // }
+        // this.node.on(cc.Node.EventType.TOUCH_END, function(event) {
+        //     this.onTouchEnd(event, self)
+        // }, this)
+        // this.node.on(cc.Node.EventType.TOUCH_START, function(event) {
+        //     this.onTouchStart(event, self)
+        // }, this)
+        // this.node.on(cc.Node.EventType.TOUCH_MOVE, function(event) {
+        //     this.onTouchMove(event, self)
+        // }, this)
+        // var paisStorage = cc.sys.localStorage.getItem('pais')
+        // if (paisStorage != null) {
+        //     var pais = paisStorage.split(' ')
+        //     for (var i = 0; i < this.rows; i++) {
+        //         for (var j = 0; j < this.columns; j++) {
+        //             this._paiSprites[i][j].getComponent(cc.Sprite).spriteFrame = this.spriteFrames[pais[i * columns + j] == -1 ? 34 : pais[i * columns + j]]
+        //             this._paiSprites[i][j].getComponent('Pai').type = pais[i * columns + j]
+        //         }
+        //     }
+        // } else {
+        //     this.shuffle()
+        // }
+    },
+    onDestroy: function onDestroy() {
+        var pais = "";
+        for (var i = 0; i < this.rows; i++) {
+            for (var j = 0; j < this.columns; j++) {
+                pais += this._paiSprites[i][j].getComponent('Pai').type + " ";
+            }
+        }
+        cc.sys.localStorage.setItem('pais', pais);
+        cc.log('save state');
+    },
+    onGameStart: function onGameStart() {
+        this.tutorial.active = false;
+        this.startButton.active = false;
+        this.startButton.enabled = false;
         this._pais = new Array();
         this._paiSprites = new Array();
         for (var i = 0; i < this.rows; i++) {
@@ -92,16 +158,6 @@ cc.Class({
         } else {
             this.shuffle();
         }
-    },
-    onDestroy: function onDestroy() {
-        var pais = "";
-        for (var i = 0; i < this.rows; i++) {
-            for (var j = 0; j < this.columns; j++) {
-                pais += this._paiSprites[i][j].getComponent('Pai').type + " ";
-            }
-        }
-        cc.sys.localStorage.setItem('pais', pais);
-        cc.log('save state');
     },
     onTouchStart: function onTouchStart(event, self) {
         // cc.log(cc.view.getFrameSize().width + ", " + cc.view.getFrameSize().height)
