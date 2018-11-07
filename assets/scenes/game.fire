@@ -722,6 +722,8 @@
     "moveMax": 0,
     "originalX": 0,
     "originalY": 0,
+    "mouseDown": false,
+    "count": 0,
     "_id": "d3tIMuwlBAO4ldMgSi+X26"
   }
 ]

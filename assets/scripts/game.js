@@ -48,54 +48,14 @@ cc.Class({
         moveMax: 0,
         originalX: 0,
         originalY: 0,
+
+        mouseDown: false,
+        count: 0
     },
 
     // LIFE-CYCLE CALLBACKS:
 
-    onLoad () {
-        // this._pais = new Array()
-        // this._paiSprites = new Array()
-        // for (var i = 0; i < this.rows; i++) {
-        //     this._pais[i] = new Array(i)
-        //     this._paiSprites[i] = new Array(i)
-        //     for (var j = 0; j < this.columns; j++) {
-        //         this._pais[i][j] = -1
-        //         this._paiSprites[i][j] = null
-        //     }
-        // }
-
-        // var self = this
-        // for (var i = 0; i < this.rows; i++) {
-        //     for (var j = 0; j < this.columns; j++) {
-        //         var newNode = cc.instantiate(this.paiPrefab)
-        //         newNode.getComponent(cc.Sprite).spriteFrame = this.spriteFrames[Math.trunc((i * this.rows + j) / 4)]
-        //         this._paiSprites[i][j] = newNode
-        //         this.node.addChild(newNode)
-        //         newNode.setPosition(cc.v2(this.paiWidth * j - this.paddingLeft, this.paiHeight * i - this.paddingTop))
-        //     }
-        // }
-        // this.node.on(cc.Node.EventType.TOUCH_END, function(event) {
-        //     this.onTouchEnd(event, self)
-        // }, this)
-        // this.node.on(cc.Node.EventType.TOUCH_START, function(event) {
-        //     this.onTouchStart(event, self)
-        // }, this)
-        // this.node.on(cc.Node.EventType.TOUCH_MOVE, function(event) {
-        //     this.onTouchMove(event, self)
-        // }, this)
-        // var paisStorage = cc.sys.localStorage.getItem('pais')
-        // if (paisStorage != null) {
-        //     var pais = paisStorage.split(' ')
-        //     for (var i = 0; i < this.rows; i++) {
-        //         for (var j = 0; j < this.columns; j++) {
-        //             this._paiSprites[i][j].getComponent(cc.Sprite).spriteFrame = this.spriteFrames[pais[i * columns + j] == -1 ? 34 : pais[i * columns + j]]
-        //             this._paiSprites[i][j].getComponent('Pai').type = pais[i * columns + j]
-        //         }
-        //     }
-        // } else {
-        //     this.shuffle()
-        // }
-    },
+    onLoad () {},
 
     onDestroy () {
         var pais = ""
@@ -142,6 +102,7 @@ cc.Class({
         this.node.on(cc.Node.EventType.TOUCH_MOVE, function(event) {
             this.onTouchMove(event, self)
         }, this)
+
         var paisStorage = cc.sys.localStorage.getItem('pais')
         if (paisStorage != null) {
             var pais = paisStorage.split(' ')
@@ -155,9 +116,24 @@ cc.Class({
             this.shuffle()
         }
     },
+
     onTouchStart (event, self) {
-        // cc.log(cc.view.getFrameSize().width + ", " + cc.view.getFrameSize().height)
-        // cc.log(event.getLocationX() + ", " + event.getLocationY())
+        if (self.mouseDown === true && self._lastPai != null) {
+            var row = self._lastPai.getComponent('Pai').x
+            var column = self._lastPai.getComponent('Pai').y
+            if (self.moveDirection === 0) {
+                for (var j = self.moveStart; j <= self.moveEnd; j++) {
+                    self._paiSprites[row][j].x = self._paiSprites[row][j].getComponent('Pai').y * self.paiWidth - self.paddingLeft
+                    self._paiSprites[row][j].zIndex = 0
+                }
+            } else if (self.moveDirection === 1) {
+                for (var i = self.moveStart; i <= self.moveEnd; i++) {
+                    self._paiSprites[i][column].y = self._paiSprites[i][column].getComponent('Pai').x * self.paiHeight - self.paddingTop
+                    self._paiSprites[i][column].zIndex = 0
+                }
+            }
+        }
+        self.mouseDown = true
         var currentPai = self._paiSprites[Math.floor(event.getLocationY() / this.paiHeight)][Math.floor(event.getLocationX() / this.paiWidth)]
         if (self._lastPai != null) {
             self._lastPai.color = cc.Color.WHITE
@@ -266,6 +242,15 @@ cc.Class({
                     currentPai.getComponent('Pai').type = -1
                     self._lastPai.getComponent('Pai').type = -1
                     currentPai.color = cc.Color.WHITE
+                    self.count += 2
+                    if (self.count >= self.rows * self.columns) {
+                        for (var i = 0; i < this.rows; i++) {
+                            for (var j = 0; j < this.columns; j++) {
+                                self._paiSprites[i][j].getComponent(cc.Sprite).spriteFrame = this.spriteFrames[Math.trunc(Math.random() * 35)]
+                                self._paiSprites[i][j].runAction(self.winSplash())
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -374,6 +359,7 @@ cc.Class({
 
     onTouchEnd (event, self) {
         cc.log('touchEnd: ')
+        self.mouseDown = false
         if (self.moveDirection === 0) {
             var row = self._lastPai.getComponent('Pai').x
             var column = self._lastPai.getComponent('Pai').y
@@ -530,6 +516,11 @@ cc.Class({
                         self._paiSprites[row][j].x = self._paiSprites[row][j].getComponent('Pai').y * self.paiWidth - self.paddingLeft
                         self._paiSprites[row][j].zIndex = 0
                     }
+                }
+            } else {
+                for (var j = self.moveStart; j <= self.moveEnd; j++) {
+                    self._paiSprites[row][j].x = self._paiSprites[row][j].getComponent('Pai').y * self.paiWidth - self.paddingLeft
+                    self._paiSprites[row][j].zIndex = 0
                 }
             }
         } else if (self.moveDirection === 1) {
@@ -695,6 +686,11 @@ cc.Class({
                         self._paiSprites[i][column].zIndex = 0
                     }
                 }
+            } else {
+                for (var i = self.moveStart; i <= self.moveEnd; i++) {
+                    self._paiSprites[i][column].y = self._paiSprites[i][column].getComponent('Pai').x * self.paiHeight - self.paddingTop
+                    self._paiSprites[i][column].zIndex = 0
+                }
             }
         }
         self.moveDirection = -1
@@ -731,6 +727,16 @@ cc.Class({
                 this._paiSprites[i][j].height = this.paiHeight
             }
         }
+    },
+
+    winSplash () {
+        var init = cc.moveTo(0, cc.v2(Math.random() * this.paiWidth * this.columns - this.paddingLeft, this.paiHeight * this.rows / 2))
+        var start = cc.moveBy(Math.random() / 2, cc.v2(0, -this.paiHeight)).easing(cc.easeCubicActionOut());
+        var scaleUp = cc.scaleTo(Math.random() / 2, 0.8, 0.8)
+        var move = cc.moveBy(Math.random() * 3, cc.v2(0, -this.paiHeight * (this.rows - 2))).easing(cc.easeCubicActionOut());
+        var scaleDown = cc.scaleTo(Math.random() / 2, 0.5, 0.5)
+        var end = cc.moveBy(Math.random() / 2, cc.v2(0, -this.paiHeight))
+        return cc.repeatForever(cc.sequence(init, start, scaleUp, move, scaleDown, end))
     },
 
     start () {
