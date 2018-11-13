@@ -1,26 +1,24 @@
 "use strict";
-cc._RF.push(module, '31784ewxLBBXr7HAZYTnthL', 'Line');
-// scripts/Line.js
+cc._RF.push(module, '31784ewxLBBXr7HAZYTnthL', 'vanishFX');
+// scripts/vanishFX.js
 
 'use strict';
-
-var Pai = require('Pai');
 
 cc.Class({
     extends: cc.Component,
 
     properties: {
-        pais: [Pai]
+        anim: {
+            default: null,
+            type: cc.Animation
+        }
     },
 
-    // LIFE-CYCLE CALLBACKS:
+    play: function play() {
+        this.anim.play('vanish');
+    }
 
-    // onLoad () {},
-
-    start: function start() {}
-}
-
-// update (dt) {},
-);
+    // update (dt) {},
+});
 
 cc._RF.pop();

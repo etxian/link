@@ -1,0 +1,28 @@
+{
+  "__type__": "cc.SpriteFrame",
+  "content": {
+    "name": "flip_01",
+    "texture": "0ac684cb-c181-4e45-8a4a-2b8e301f9a29",
+    "atlas": "",
+    "rect": [
+      4,
+      3,
+      72,
+      74
+    ],
+    "offset": [
+      0,
+      0
+    ],
+    "originalSize": [
+      80,
+      80
+    ],
+    "capInsets": [
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+}

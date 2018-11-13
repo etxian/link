@@ -2,7 +2,7 @@
 cc._RF.push(module, '0751eYw/21IwbVHNrMrO7uM', 'game');
 // scripts/game.js
 
-"use strict";
+'use strict';
 
 cc.Class({
     extends: cc.Component,
@@ -56,12 +56,31 @@ cc.Class({
         originalY: 0,
 
         mouseDown: false,
-        count: 0
+        count: 0,
+
+        coward: false
     },
 
     // LIFE-CYCLE CALLBACKS:
 
-    onLoad: function onLoad() {},
+    onLoad: function onLoad() {
+        cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
+    },
+    onKeyDown: function onKeyDown(event) {
+        switch (event.keyCode) {
+            case cc.macro.KEY.n:
+                if (this.coward && this._lastPai != null && this._lastPai.getComponent('Pai').type != -1) {
+                    for (var i = 0; i < 4; i++) {
+                        var index = this._pais[this._lastPai.getComponent('Pai').type * 4 + i];
+                        if (index != null) {
+                            this._paiSprites[index.x][index.y].color = cc.Color.WHITE;
+                        }
+                    }
+                }
+                this.coward = !this.coward;
+                break;
+        }
+    },
     onDestroy: function onDestroy() {
         var pais = "";
         for (var i = 0; i < this.rows; i++) {
@@ -73,16 +92,11 @@ cc.Class({
         cc.log('save state');
     },
     onGameStart: function onGameStart() {
-        this.tutorial.active = false;
-        this.startButton.active = false;
-        this.startButton.enabled = false;
-        this._pais = new Array();
-        this._paiSprites = new Array();
+        this._pais = new Array(this.rows * this.columns);
+        this._paiSprites = new Array(this.rows);
         for (var i = 0; i < this.rows; i++) {
-            this._pais[i] = new Array(i);
-            this._paiSprites[i] = new Array(i);
+            this._paiSprites[i] = new Array(this.columns);
             for (var j = 0; j < this.columns; j++) {
-                this._pais[i][j] = -1;
                 this._paiSprites[i][j] = null;
             }
         }
@@ -119,6 +133,10 @@ cc.Class({
         } else {
             this.shuffle();
         }
+        this.tutorial.active = false;
+        this.startButton.active = false;
+        this.startButton.enabled = false;
+        this.startButton.visable = false;
     },
     onTouchStart: function onTouchStart(event, self) {
         if (self.mouseDown === true && self._lastPai != null) {
@@ -140,7 +158,15 @@ cc.Class({
         var currentPai = self._paiSprites[Math.floor(event.getLocationY() / this.paiHeight)][Math.floor(event.getLocationX() / this.paiWidth)];
         if (self._lastPai != null) {
             self._lastPai.color = cc.Color.WHITE;
-            if (currentPai.getComponent('Pai').type === self._lastPai.getComponent('Pai').type && currentPai != self._lastPai) {
+            if (self.coward && self._lastPai.getComponent('Pai').type != -1) {
+                for (var i = 0; i < 4; i++) {
+                    var index = self._pais[self._lastPai.getComponent('Pai').type * 4 + i];
+                    if (index != null) {
+                        self._paiSprites[index.x][index.y].color = cc.Color.WHITE;
+                    }
+                }
+            }
+            if (currentPai.getComponent('Pai').type === self._lastPai.getComponent('Pai').type && self._lastPai.getComponent('Pai').type != -1 && currentPai != self._lastPai) {
                 var currentX = currentPai.getComponent('Pai').x;
                 var currentY = currentPai.getComponent('Pai').y;
                 var lastX = self._lastPai.getComponent('Pai').x;
@@ -244,6 +270,8 @@ cc.Class({
                     self._lastPai.height = this.paiHeight;
                     currentPai.getComponent('Pai').type = -1;
                     self._lastPai.getComponent('Pai').type = -1;
+                    self._pais[self._lastPai.index] = null;
+                    self._pais[currentPai.index] = null;
                     currentPai.color = cc.Color.WHITE;
                     self.count += 2;
                     if (self.count >= self.rows * self.columns) {
@@ -259,13 +287,21 @@ cc.Class({
         }
         currentPai.color = cc.Color.GRAY;
         self._lastPai = currentPai;
+        if (self.coward && currentPai.getComponent('Pai').type != -1) {
+            for (var i = 0; i < 4; i++) {
+                var index = self._pais[currentPai.getComponent('Pai').type * 4 + i];
+                if (index != null && self._paiSprites[index.x][index.y].getComponent('Pai').type != -1) {
+                    self._paiSprites[index.x][index.y].color = cc.Color.GRAY;
+                }
+            }
+        }
         self.originalX = currentPai.getComponent('Pai').x;
         self.originalY = currentPai.getComponent('Pai').y;
     },
     onTouchMove: function onTouchMove(event, self) {
         var delta = event.getDelta();
         var location = event.getLocation();
-        if (self._lastPai != null) {
+        if (self._lastPai != null && self._lastPai.getComponent('Pai').type != -1) {
             var x = self._lastPai.getComponent('Pai').x;
             var y = self._lastPai.getComponent('Pai').y;
             if (self.moveDirection === -1) {
@@ -419,10 +455,13 @@ cc.Class({
                 if (matchFound) {
                     for (var j = self.moveEnd; j >= self.moveStart; j--) {
                         //cc.log("x: " + row + ", y: " + (j + delta) + ", from: " + self._paiSprites[row][j + delta].getComponent('Pai').type + ", to: " + self._paiSprites[row][j].getComponent('Pai').type)
-                        self._paiSprites[row][j + delta].getComponent('Pai').type = self._paiSprites[row][j].getComponent('Pai').type;
-                        self._paiSprites[row][j + delta].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[self._paiSprites[row][j].getComponent('Pai').type];
+                        var type = self._paiSprites[row][j].getComponent('Pai').type;
+                        self._paiSprites[row][j + delta].getComponent('Pai').type = type;
+                        self._paiSprites[row][j + delta].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[type];
+                        self._paiSprites[row][j + delta].index = self._paiSprites[row][j].index;
                         self._paiSprites[row][j + delta].width = self.paiWidth;
                         self._paiSprites[row][j + delta].height = self.paiHeight;
+                        self._pais[self._paiSprites[row][j].index] = cc.v2(row, j + delta);
                         if (j < self.moveStart + delta) {
                             self._paiSprites[row][j].getComponent('Pai').type = -1;
                             self._paiSprites[row][j].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[34];
@@ -432,6 +471,17 @@ cc.Class({
                         self._paiSprites[row][j].zIndex = 0;
                         self._paiSprites[row][j].width = self.paiWidth;
                         self._paiSprites[row][j].height = self.paiHeight;
+                    }
+                    self._lastPai.color = cc.Color.WHITE;
+                    self._lastPai = self._paiSprites[row][currentX];
+                    self._lastPai.color = cc.Color.GRAY;
+                    if (self.coward) {
+                        for (var i = 0; i < 4; i++) {
+                            var index = self._pais[self._lastPai.getComponent('Pai').type * 4 + i];
+                            if (index != null) {
+                                self._paiSprites[index.x][index.y].color = cc.Color.GRAY;
+                            }
+                        }
                     }
                 } else {
                     for (var j = self.moveStart; j <= self.moveEnd; j++) {
@@ -490,10 +540,13 @@ cc.Class({
                 if (matchFound) {
                     for (var j = self.moveStart; j <= self.moveEnd; j++) {
                         //cc.log("x: " + row + ", y: " + (j + delta) + ", from: " + self._paiSprites[row][j + delta].getComponent('Pai').type + ", to: " + self._paiSprites[row][j].getComponent('Pai').type)
-                        self._paiSprites[row][j + delta].getComponent('Pai').type = self._paiSprites[row][j].getComponent('Pai').type;
-                        self._paiSprites[row][j + delta].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[self._paiSprites[row][j].getComponent('Pai').type];
+                        var type = self._paiSprites[row][j].getComponent('Pai').type;
+                        self._paiSprites[row][j + delta].getComponent('Pai').type = type;
+                        self._paiSprites[row][j + delta].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[type];
+                        self._paiSprites[row][j + delta].index = self._paiSprites[row][j].index;
                         self._paiSprites[row][j + delta].width = self.paiWidth;
                         self._paiSprites[row][j + delta].height = self.paiHeight;
+                        self._pais[self._paiSprites[row][j].index] = cc.v2(row, j + delta);
                         if (j > self.moveEnd + delta) {
                             self._paiSprites[row][j].getComponent('Pai').type = -1;
                             self._paiSprites[row][j].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[34];
@@ -503,6 +556,17 @@ cc.Class({
                         self._paiSprites[row][j].zIndex = 0;
                         self._paiSprites[row][j].width = self.paiWidth;
                         self._paiSprites[row][j].height = self.paiHeight;
+                    }
+                    self._lastPai.color = cc.Color.WHITE;
+                    self._lastPai = self._paiSprites[row][currentX];
+                    self._lastPai.color = cc.Color.GRAY;
+                    if (self.coward) {
+                        for (var i = 0; i < 4; i++) {
+                            var index = self._pais[self._lastPai.getComponent('Pai').type * 4 + i];
+                            if (index != null) {
+                                self._paiSprites[index.x][index.y].color = cc.Color.GRAY;
+                            }
+                        }
                     }
                 } else {
                     for (var j = self.moveStart; j <= self.moveEnd; j++) {
@@ -576,10 +640,13 @@ cc.Class({
                 if (matchFound) {
                     for (var i = self.moveEnd; i >= self.moveStart; i--) {
                         //cc.log("x: " + i + ", y: " + (j + delta) + ", from: " + self._paiSprites[row][j + delta].getComponent('Pai').type + ", to: " + self._paiSprites[row][j].getComponent('Pai').type)
-                        self._paiSprites[i + delta][column].getComponent('Pai').type = self._paiSprites[i][column].getComponent('Pai').type;
-                        self._paiSprites[i + delta][column].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[self._paiSprites[i][column].getComponent('Pai').type];
+                        var type = self._paiSprites[i][column].getComponent('Pai').type;
+                        self._paiSprites[i + delta][column].getComponent('Pai').type = type;
+                        self._paiSprites[i + delta][column].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[type];
+                        self._paiSprites[i + delta][column].index = self._paiSprites[i][column].index;
                         self._paiSprites[i + delta][column].width = self.paiWidth;
                         self._paiSprites[i + delta][column].height = self.paiHeight;
+                        self._pais[self._paiSprites[i][column].index] = cc.v2(i + delta, column);
                         if (i < self.moveStart + delta) {
                             self._paiSprites[i][column].getComponent('Pai').type = -1;
                             self._paiSprites[i][column].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[34];
@@ -589,6 +656,17 @@ cc.Class({
                         self._paiSprites[i][column].zIndex = 0;
                         self._paiSprites[i][column].width = self.paiWidth;
                         self._paiSprites[i][column].height = self.paiHeight;
+                    }
+                    self._lastPai.color = cc.Color.WHITE;
+                    self._lastPai = self._paiSprites[currentY][column];
+                    self._lastPai.color = cc.Color.GRAY;
+                    if (self.coward) {
+                        for (var i = 0; i < 4; i++) {
+                            var index = self._pais[self._lastPai.getComponent('Pai').type * 4 + i];
+                            if (index != null) {
+                                self._paiSprites[index.x][index.y].color = cc.Color.GRAY;
+                            }
+                        }
                     }
                 } else {
                     for (var i = self.moveStart; i <= self.moveEnd; i++) {
@@ -653,10 +731,13 @@ cc.Class({
                 if (matchFound) {
                     for (var i = self.moveStart; i <= self.moveEnd; i++) {
                         //cc.log("x: " + row + ", y: " + (j + delta) + ", from: " + self._paiSprites[row][j + delta].getComponent('Pai').type + ", to: " + self._paiSprites[row][j].getComponent('Pai').type)
-                        self._paiSprites[i + delta][column].getComponent('Pai').type = self._paiSprites[i][column].getComponent('Pai').type;
-                        self._paiSprites[i + delta][column].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[self._paiSprites[i][column].getComponent('Pai').type];
+                        var type = self._paiSprites[i][column].getComponent('Pai').type;
+                        self._paiSprites[i + delta][column].getComponent('Pai').type = type;
+                        self._paiSprites[i + delta][column].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[type];
+                        self._paiSprites[i + delta][column].index = self._paiSprites[i][column].index;
                         self._paiSprites[i + delta][column].width = self.paiWidth;
                         self._paiSprites[i + delta][column].height = self.paiHeight;
+                        self._pais[self._paiSprites[i][column].index] = cc.v2(i + delta, column);
                         if (i > self.moveEnd + delta) {
                             self._paiSprites[i][column].getComponent('Pai').type = -1;
                             self._paiSprites[i][column].getComponent(cc.Sprite).spriteFrame = self.spriteFrames[34];
@@ -666,6 +747,17 @@ cc.Class({
                         self._paiSprites[i][column].zIndex = 0;
                         self._paiSprites[i][column].width = self.paiWidth;
                         self._paiSprites[i][column].height = self.paiHeight;
+                    }
+                    self._lastPai.color = cc.Color.WHITE;
+                    self._lastPai = self._paiSprites[currentY][column];
+                    self._lastPai.color = cc.Color.GRAY;
+                    if (self.coward) {
+                        for (var i = 0; i < 4; i++) {
+                            var index = self._pais[self._lastPai.getComponent('Pai').type * 4 + i];
+                            if (index != null) {
+                                self._paiSprites[index.x][index.y].color = cc.Color.GRAY;
+                            }
+                        }
                     }
                 } else {
                     for (var i = self.moveStart; i <= self.moveEnd; i++) {
@@ -687,11 +779,8 @@ cc.Class({
         var m = array.length,
             t,
             index;
-        for (var i = 0; i < this.columns * 2; i++) {
-            array[i * 4] = i;
-            array[i * 4 + 1] = i;
-            array[i * 4 + 2] = i;
-            array[i * 4 + 3] = i;
+        for (var i = 0; i < this.rows * this.columns; i++) {
+            array[i] = i;
         }
 
         // While there remain elements to shuffle…
@@ -707,12 +796,17 @@ cc.Class({
 
         for (var i = 0; i < this.rows; i++) {
             for (var j = 0; j < this.columns; j++) {
-                this._paiSprites[i][j].getComponent(cc.Sprite).spriteFrame = this.spriteFrames[array[i * this.columns + j]];
-                this._paiSprites[i][j].getComponent('Pai').type = array[i * this.columns + j];
+                var index = i * this.columns + j;
+                var type = Math.trunc(array[index] / 4);
+                this._paiSprites[i][j].getComponent(cc.Sprite).spriteFrame = this.spriteFrames[type];
+                this._paiSprites[i][j].getComponent('Pai').type = type;
                 this._paiSprites[i][j].getComponent('Pai').x = i;
                 this._paiSprites[i][j].getComponent('Pai').y = j;
                 this._paiSprites[i][j].width = this.paiWidth;
                 this._paiSprites[i][j].height = this.paiHeight;
+                this._paiSprites[i][j].index = array[index];
+                cc.log(array[index] + ", " + i + ", " + j);
+                this._pais[array[index]] = cc.v2(i, j);
             }
         }
     },
