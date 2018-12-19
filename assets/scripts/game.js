@@ -513,8 +513,7 @@ cc.Class({
                     self._pais[self._lastPai.index] = null
                     self._pais[currentPai.index] = null
                     currentPai.color = cc.Color.WHITE
-                    cc.log("Check died game:");
-                    cc.log(this.diedGame());
+                    
                     self.count += 2
                     if (self.count >= self.rows * self.columns) {
                         for (var i = 0; i < this.rows; i++) {
@@ -522,6 +521,11 @@ cc.Class({
                                 self._paiSprites[i][j].getComponent(cc.Sprite).spriteFrame = this.spriteFrames[Math.trunc(Math.random() * 35)]
                                 self._paiSprites[i][j].runAction(self.winSplash())
                             }
+                        }
+                    } else {
+                        cc.log("Check died game:");
+                        while(this.diedGame()) {
+                            this.reshuffle();
                         }
                     }
                 }
@@ -761,7 +765,9 @@ cc.Class({
                     if (j <= self.moveEnd + delta) {
                         if (row != self.rows - 1) {
                             var highX = row + 1
+                            
                             while (highX < self.rows && self._paiSprites[highX][j].getComponent('Pai').type === -1) {
+                                cc.log(highX.toString() + ", " + j);
                                 highX++
                             }
                             //cc.log('highX: ' + highX + ", j: " + "" + j + ", type: " + self._paiSprites[highX][j].getComponent('Pai').type)
@@ -1034,7 +1040,66 @@ cc.Class({
 
         this.diedGame();
     },
+    switchPai(x1, y1, x2, y2) {
+        var tempType = this._paiSprites[x1][y1].getComponent('Pai').type;
+        var tempX = this._paiSprites[x1][y1].getComponent('Pai').x;
+        var tempY = this._paiSprites[x1][y1].getComponent('Pai').y;
 
+        var targetType = this._paiSprites[x2][y2].getComponent('Pai').type;
+        var targetX = this._paiSprites[x2][y2].getComponent('Pai').x;
+        var targetY = this._paiSprites[x2][y2].getComponent('Pai').y;
+
+        if (targetType < 0 || tempType < 0) {
+            return;
+        }
+
+        this._paiSprites[x1][y1].getComponent(cc.Sprite).spriteFrame = this.spriteFrames[targetType]
+        this._paiSprites[x1][y1].getComponent('Pai').type = targetType;
+        this._paiSprites[x1][y1].width = this.paiWidth;
+        this._paiSprites[x1][y1].height = this.paiHeight;
+
+
+        this._paiSprites[x2][y2].getComponent(cc.Sprite).spriteFrame = this.spriteFrames[tempType]
+        this._paiSprites[x2][y2].getComponent('Pai').type = tempType;
+        this._paiSprites[x2][y2].width = this.paiWidth;
+        this._paiSprites[x2][y2].height = this.paiHeight;
+
+    },
+    reshuffle() {
+        var indexes = [];
+        for (var i = 0; i < this.rows; i++) {
+            for (var j = 0; j < this.columns; j++) {
+                var pai = this._paiSprites[i][j].getComponent('Pai');
+                if (pai.type >= 0) {
+                    indexes.push({x:i,y:j});
+                }
+            }
+        }
+
+        var array = new Array(indexes.length);
+        var m = array.length, t, index;
+        for (var i = 0; i < m; i++) {
+            array[i] = i
+        }
+
+        while (m) {
+          index = Math.floor(Math.random() * m--);
+
+          // And swap it with the current element.
+          t = array[m];
+          array[m] = array[index];
+          array[index] = t;
+        }
+
+        for (var i = 0; i < array.length ; i++) {
+            var x1 = indexes[i].x;
+            var y1 = indexes[i].y;
+            var x2 = indexes[array[i]].x;
+            var y2 = indexes[array[i]].y;
+            this.switchPai(x1,y1,x2,y2);
+        }
+        
+    },
     shuffle() {
         var array = new Array(this.rows * this.columns)
         var m = array.length, t, index;

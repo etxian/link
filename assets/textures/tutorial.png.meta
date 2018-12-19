@@ -1,10 +1,11 @@
 {
-  "ver": "2.2.0",
+  "ver": "2.3.0",
   "uuid": "7564f787-30f6-44e8-9174-fe4be6ce66d7",
   "type": "sprite",
   "wrapMode": "clamp",
   "filterMode": "bilinear",
   "premultiplyAlpha": false,
+  "platformSettings": {},
   "subMetas": {
     "tutorial": {
       "ver": "1.0.3",
