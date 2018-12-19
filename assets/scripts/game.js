@@ -136,6 +136,248 @@ cc.Class({
         this.startButton.visable = false
     },
 
+    diedGame() {
+        var livePai = {}
+        var map = new Array(this.rows);
+
+        for (var i = 0; i < this.rows; i++) {
+            map[i] = [];
+            for (var j = 0; j < this.columns; j++) {
+                var pai = this._paiSprites[i][j].getComponent('Pai');
+                var t = pai.type;
+                var o = {type: t, x: i, y: j};
+                map[i].push(o);
+                if (t == -1) {
+                    continue;
+                }
+
+                if (t in livePai) {
+                    livePai[t].push(o);
+                } else {
+                    livePai[t] = [o];
+                }
+            }
+        }
+
+        if (this.staticLiveGame(map, livePai)) {
+            return false;
+        }
+
+        for (var i = 0; i < this.rows; i++) {
+            for (var j = 0; j < this.columns; j++) {
+                if (map[i][j].type != -1) {
+                    continue;
+                }
+
+                // ======================
+                // try to move left pais to current location
+                var x = i - 1;
+                while(x>-1 && map[x][j].type < 0) {
+                    x--;
+                }
+
+                // if x >= 0, that mean there is pai on left can be moved
+                if (x >= 0) {
+                    var delta = i - x;
+                    var c = 0;
+                    while((x-c)>=0 && map[x-c][j].type >= 0) {
+                        c++;
+                    }
+
+                    // move pai
+                    for(var k=0;k<c;k++) {
+                        var temp = map[i-k][j];
+                        map[i-k][j] = map[x-k][j];
+                        map[i-k][j].x = i-k;
+                        map[x-k][j] = temp;
+                        map[x-k][j].x = x-k;
+                    }
+
+                    if(this.staticLiveGame(map, livePai)) {
+                        return false;
+                    }
+
+                    // resume pai
+                    for(var k = c-1; k >= 0; k--) {
+                        var temp = map[i-k][j];
+                        map[i-k][j] = map[x-k][j];
+                        map[i-k][j].x = i-k;
+                        map[x-k][j] = temp;
+                        map[x-k][j].x = x-k;
+                    }
+                    
+                }
+                // ====================
+                // try to move right pais to current location
+                x = i + 1;
+                while(x < this.rows && map[x][j].type < 0) {
+                    x++;
+                }
+
+                // if x < columns, that mean there is pai on right can be moved
+                if (x < this.rows) {
+                    var delta = x - i;
+                    var c = 0;
+                    while((x+c) < this.rows && map[x+c][j].type >= 0) {
+                        c++;
+                    }
+
+                    // move pai
+                    for(var k=0;k<c;k++) {
+                        var temp = map[i+k][j];
+                        map[i+k][j] = map[x+k][j];
+                        map[i+k][j].x = i+k;
+                        map[x+k][j] = temp;
+                        map[x+k][j].x = x+k;
+                    }
+
+                    if(this.staticLiveGame(map, livePai)) {
+                        return false;
+                    }
+
+                    // resume pai
+                    for(var k = c-1; k >= 0; k--) {
+                        var temp = map[i+k][j];
+                        map[i+k][j] = map[x+k][j];
+                        map[i+k][j].x = i+k;
+                        map[x+k][j] = temp;
+                        map[x+k][j].x = x+k;
+                    }
+                    
+                }
+
+                // ====================================
+                x = j - 1;
+                while(x > -1 && map[i][x].type < 0) {
+                    x--;
+                }
+
+                // if x >= 0, that mean there is pai  can be moved
+                if (x >= 0) {
+                    var delta = j - x;
+                    var c = 0;
+                    while((x-c)>=0 && map[i][x-c].type >= 0) {
+                        c++;
+                    }
+
+                    // move pai
+                    for(var k=0;k<c;k++) {
+                        var temp = map[i][j-k];
+                        map[i][j-k] = map[i][x-k];
+                        map[i][j-k].y = j-k;
+                        map[i][x-k] = temp;
+                        map[i][x-k].y = x-k;
+                    }
+
+                    if(this.staticLiveGame(map, livePai)) {
+                        return false;
+                    }
+
+                    // resume pai
+                    for(var k = c-1; k >= 0; k--) {
+                        var temp = map[i][j-k];
+                        map[i][j-k] = map[i][x-k];
+                        map[i][j-k].y = j-k;
+                        map[i][x-k] = temp;
+                        map[i][x-k].y = x-k;
+                    }
+                    
+                }
+                // ====================
+                // try to move right pais to current location
+                x = j + 1;
+                while(x < this.columns && map[i][x].type < 0) {
+                    x++;
+                }
+
+                // if x < columns, that mean there is pai on right can be moved
+                if (x < this.columns) {
+                    var delta = x - i;
+                    var c = 0;
+                    while((x+c) < this.columns && map[i][x+c].type >= 0) {
+                        c++;
+                    }
+
+                    // move pai
+                    for(var k=0;k<c;k++) {
+                        var temp = map[i][j+k];
+                        map[i][j+k] = map[i][x+k];
+                        map[i][j+k].y = j+k;
+                        map[i][x+k] = temp;
+                        map[i][x+k].y = x+k;
+                    }
+
+                    if(this.staticLiveGame(map, livePai)) {
+                        return false;
+                    }
+
+                    // resume pai
+                    for(var k = c-1; k >= 0; k--) {
+                        var temp = map[i][j+k];
+                        map[i][j+k] = map[i][x+k];
+                        map[i][j+k].y = j+k;
+                        map[i][x+k] = temp;
+                        map[i][x+k].y = x+k;
+                    }
+                    
+                }
+            }
+        }
+
+        return true;
+    },
+    // check map, if there steps available
+    staticLiveGame(map, livePai) {
+        for(var key in livePai) {
+            var pais = livePai[key];
+            for(var i=0;i<pais.length-1;i++) {
+                for(var j=i+1;j<pais.length;j++) {
+                    if (this.connected(map, pais[i].x, pais[i].y, pais[j].x, pais[j].y)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    },
+    connected(map, x1, y1, x2, y2) {
+        if (x1 == x2) {
+            var small = y1;
+            var big = y2;
+            if (y1 > y2) {
+                small = y2;
+                big = y1;
+            }
+
+            for (var i = small+1; i < big; i++ )
+            {
+                if (map[x1][i].type != -1) {
+                    return false;
+                }
+            }
+            cc.log("connected: " + x1.toString() + ", " + y1.toString() + "; " + x2.toString() + ", " + y2.toString())
+            return true;
+        }
+
+        if (y1 == y2) {
+            var small = x1;
+            var big = x2;
+            if (x1 > x2) {
+                small = x2;
+                big = x1;
+            }
+
+            for (var i = small+1; i < big; i++ )
+            {
+                if (map[i][y1].type != -1) {
+                    return false;
+                }
+            }
+            cc.log("connected: " + x1.toString() + ", " + y1.toString() + "; " + x2.toString() + ", " + y2.toString())
+            return true;
+        }
+        return false;
+    },
     onTouchStart (event, self) {
         if (self.mouseDown === true && self._lastPai != null) {
             var row = self._lastPai.getComponent('Pai').x
@@ -271,6 +513,8 @@ cc.Class({
                     self._pais[self._lastPai.index] = null
                     self._pais[currentPai.index] = null
                     currentPai.color = cc.Color.WHITE
+                    cc.log("Check died game:");
+                    cc.log(this.diedGame());
                     self.count += 2
                     if (self.count >= self.rows * self.columns) {
                         for (var i = 0; i < this.rows; i++) {
@@ -787,6 +1031,8 @@ cc.Class({
             }
         }
         self.moveDirection = -1
+
+        this.diedGame();
     },
 
     shuffle() {
