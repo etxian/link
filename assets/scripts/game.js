@@ -36,6 +36,11 @@ cc.Class({
 
         paddingLeft: 640,
         paddingTop: 360,
+        solutionx1: -1,
+        solutiony1: -1,
+        solutionx2: -1,
+        solutiony2: -1,
+        suggestionTimer: null,
 
         _lastPai: null,
         lastX: 0,
@@ -135,6 +140,23 @@ cc.Class({
         this.startButton.enabled = false
         this.startButton.visable = false
     },
+    highLightSolution() {
+        if (this.solutionx1 >= 0 && this.solutionx2 >= 0 && this.solutiony1 >= 0 && this.solutiony2 >= 0) {
+            this._paiSprites[this.solutionx1][this.solutiony1].width = this.paiWidth + 15;
+            this._paiSprites[this.solutionx1][this.solutiony1].height = this.paiHeight + 15;
+            this._paiSprites[this.solutionx2][this.solutiony2].width = this.paiWidth + 15;
+            this._paiSprites[this.solutionx2][this.solutiony2].height = this.paiHeight + 15;
+        }
+        setTimeout(() => {this.stopHighLightSolution()}, 300);
+    },
+    stopHighLightSolution() {
+        if (this.solutionx1 >= 0 && this.solutionx2 >= 0 && this.solutiony1 >= 0 && this.solutiony2 >= 0) {
+            this._paiSprites[this.solutionx1][this.solutiony1].width = this.paiWidth;
+            this._paiSprites[this.solutionx1][this.solutiony1].height = this.paiHeight;
+            this._paiSprites[this.solutionx2][this.solutiony2].width = this.paiWidth;
+            this._paiSprites[this.solutionx2][this.solutiony2].height = this.paiHeight;
+        }
+    },
 
     diedGame() {
         var livePai = {}
@@ -159,7 +181,7 @@ cc.Class({
             }
         }
 
-        if (this.staticLiveGame(map, livePai)) {
+        if (this.staticLiveGame(map, livePai, 0, 0, 0, 0)) {
             return false;
         }
 
@@ -193,7 +215,7 @@ cc.Class({
                         map[x-k][j].x = x-k;
                     }
 
-                    if(this.staticLiveGame(map, livePai)) {
+                    if(this.staticLiveGame(map, livePai, 1, i, j, delta, c)) {
                         return false;
                     }
 
@@ -231,7 +253,7 @@ cc.Class({
                         map[x+k][j].x = x+k;
                     }
 
-                    if(this.staticLiveGame(map, livePai)) {
+                    if(this.staticLiveGame(map, livePai, 2, i, j, delta, c)) {
                         return false;
                     }
 
@@ -269,7 +291,7 @@ cc.Class({
                         map[i][x-k].y = x-k;
                     }
 
-                    if(this.staticLiveGame(map, livePai)) {
+                    if(this.staticLiveGame(map, livePai, 3, i, j, delta, c)) {
                         return false;
                     }
 
@@ -292,7 +314,7 @@ cc.Class({
 
                 // if x < columns, that mean there is pai on right can be moved
                 if (x < this.columns) {
-                    var delta = x - i;
+                    var delta = x - j;
                     var c = 0;
                     while((x+c) < this.columns && map[i][x+c].type >= 0) {
                         c++;
@@ -307,7 +329,7 @@ cc.Class({
                         map[i][x+k].y = x+k;
                     }
 
-                    if(this.staticLiveGame(map, livePai)) {
+                    if(this.staticLiveGame(map, livePai, 4, i, j, delta, c)) {
                         return false;
                     }
 
@@ -327,12 +349,12 @@ cc.Class({
         return true;
     },
     // check map, if there steps available
-    staticLiveGame(map, livePai) {
+    staticLiveGame(map, livePai, mode, centerx, centery, offset, count) {
         for(var key in livePai) {
             var pais = livePai[key];
             for(var i=0;i<pais.length-1;i++) {
                 for(var j=i+1;j<pais.length;j++) {
-                    if (this.connected(map, pais[i].x, pais[i].y, pais[j].x, pais[j].y)) {
+                    if (this.connected(map, pais[i].x, pais[i].y, pais[j].x, pais[j].y, mode, centerx, centery, offset, count)) {
                         return true;
                     }
                 }
@@ -340,7 +362,42 @@ cc.Class({
         }
         return false;
     },
-    connected(map, x1, y1, x2, y2) {
+    adjustPosition(x, y, mode, centerx, centery, offset, count) {
+        if (mode == 1) {
+            if (y == centery) {
+                if (x <= centerx && x >= (centerx-count)) {
+                    return [x - offset, y];
+                }
+            }
+        }
+
+        if (mode == 2) {
+            if (y == centery) {
+                if (x <= (centerx + count) && x >= centerx) {
+                    return [x + offset, y];
+                }
+            }
+        }
+
+        if (mode == 3) {
+            if (x == centerx) {
+                if (y < centery && y >= centery - count) {
+                    return [x, y - offset];
+                }
+            }
+        }
+
+        if (mode == 4) {
+            if (x == centerx) {
+                if (y <= (centery + count) && y >= centery) {
+                    return [x, y + offset];
+                }
+            }
+        }
+
+        return [x, y];
+    },
+    connected(map, x1, y1, x2, y2, mode, centerx, centery, offset, count) {
         if (x1 == x2) {
             var small = y1;
             var big = y2;
@@ -355,7 +412,13 @@ cc.Class({
                     return false;
                 }
             }
-            cc.log("connected: " + x1.toString() + ", " + y1.toString() + "; " + x2.toString() + ", " + y2.toString())
+            var adjusted1 = this.adjustPosition(x1, y1, mode, centerx, centery, offset, count);
+            var adjusted2 = this.adjustPosition(x2, y2, mode, centerx, centery, offset, count);
+            this.solutionx1 = adjusted1[0];
+            this.solutiony1 = adjusted1[1];
+            this.solutionx2 = adjusted2[0];
+            this.solutiony2 = adjusted2[1];
+            cc.log("connected: " + adjusted1[0].toString() + ", " + adjusted1[1].toString() + "; " + adjusted2[0].toString() + ", " + adjusted2[1].toString())
             return true;
         }
 
@@ -373,7 +436,13 @@ cc.Class({
                     return false;
                 }
             }
-            cc.log("connected: " + x1.toString() + ", " + y1.toString() + "; " + x2.toString() + ", " + y2.toString())
+            var adjusted1 = this.adjustPosition(x1, y1, mode, centerx, centery, offset, count);
+            var adjusted2 = this.adjustPosition(x2, y2, mode, centerx, centery, offset, count);
+            this.solutionx1 = adjusted1[0];
+            this.solutiony1 = adjusted1[1];
+            this.solutionx2 = adjusted2[0];
+            this.solutiony2 = adjusted2[1];
+            cc.log("connected: " + adjusted1[0].toString() + ", " + adjusted1[1].toString() + "; " + adjusted2[0].toString() + ", " + adjusted2[1].toString())
             return true;
         }
         return false;
@@ -527,6 +596,12 @@ cc.Class({
                         while(this.diedGame()) {
                             this.reshuffle();
                         }
+                        clearTimeout(this.suggestionTimer);
+                        this.suggestionTimer = setTimeout(
+                            () => { 
+                                this.highLightSolution(); 
+                            }
+                            , 10000);
                     }
                 }
             }
