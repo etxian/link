@@ -27,6 +27,15 @@ cc.Class({
             default: null,
             type: cc.Button
         },
+        hintButton: {
+            default: null,
+            type: cc.Button
+        },
+        scoreLabel: {
+            default: null,
+            type: cc.Label
+        },
+
         _paiSprites: {
             default: [],
             type: [cc.Node]
@@ -41,7 +50,7 @@ cc.Class({
         paiHeight: 90,
 
         paddingLeft: 640,
-        paddingTop: 360,
+        paddingTop: 360, //360,
         solutionx1: -1,
         solutiony1: -1,
         solutionx2: -1,
@@ -70,6 +79,8 @@ cc.Class({
 
     onLoad: function onLoad() {
         cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
+
+        this.hintButton.active = false;
     },
     onKeyDown: function onKeyDown(event) {
         switch (event.keyCode) {
@@ -95,6 +106,14 @@ cc.Class({
         }
         cc.sys.localStorage.setItem('pais', pais);
         cc.log('save state');
+    },
+    onGameHints: function onGameHints() {
+        var _this = this;
+
+        clearTimeout(this.suggestionTimer);
+        this.suggestionTimer = setTimeout(function () {
+            _this.highLightSolution();
+        }, 500);
     },
     onGameStart: function onGameStart() {
         this._pais = new Array(this.rows * this.columns);
@@ -141,10 +160,14 @@ cc.Class({
         this.tutorial.active = false;
         this.startButton.active = false;
         this.startButton.enabled = false;
-        this.startButton.visable = false;
+        //this.hintButton.enabled = true;
+        this.hintButton.active = true;
+        this.hintButton.enabled = true;
+        this.hintButton.node.active = true;
+        this.scoreLabel.string = "0";
     },
     highLightSolution: function highLightSolution() {
-        var _this = this;
+        var _this2 = this;
 
         if (this.solutionx1 >= 0 && this.solutionx2 >= 0 && this.solutiony1 >= 0 && this.solutiony2 >= 0) {
             this._paiSprites[this.solutionx1][this.solutiony1].width = this.paiWidth + 15;
@@ -153,7 +176,7 @@ cc.Class({
             this._paiSprites[this.solutionx2][this.solutiony2].height = this.paiHeight + 15;
         }
         setTimeout(function () {
-            _this.stopHighLightSolution();
+            _this2.stopHighLightSolution();
         }, 300);
     },
     stopHighLightSolution: function stopHighLightSolution() {
@@ -449,8 +472,6 @@ cc.Class({
         return false;
     },
     onTouchStart: function onTouchStart(event, self) {
-        var _this2 = this;
-
         if (self.mouseDown === true && self._lastPai != null) {
             var row = self._lastPai.getComponent('Pai').x;
             var column = self._lastPai.getComponent('Pai').y;
@@ -599,10 +620,6 @@ cc.Class({
                         while (this.diedGame()) {
                             this.reshuffle();
                         }
-                        clearTimeout(this.suggestionTimer);
-                        this.suggestionTimer = setTimeout(function () {
-                            _this2.highLightSolution();
-                        }, 2000);
                     }
                 }
             }

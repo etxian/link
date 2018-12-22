@@ -229,11 +229,6 @@
     "meta": 1545019152821,
     "relativePath": "textures\\34.png"
   },
-  "1fc5f44f-539a-4316-a523-d0adaf39cb5d": {
-    "asset": 1545018062817,
-    "meta": 1545019152371,
-    "relativePath": "scenes\\game.fire"
-  },
   "0898abfc-6055-4797-b3ae-b0d8e69b2508": {
     "asset": 1545018062897,
     "meta": 1545018062879,
@@ -510,8 +505,13 @@
     "relativePath": "prefab\\webview.prefab"
   },
   "0751e630-ff6d-48c1-b547-36b32b3bbb8c": {
-    "asset": 1545286502619,
-    "meta": 1545286504226,
+    "asset": 1545449152815,
+    "meta": 1545449154414,
     "relativePath": "scripts\\game.js"
+  },
+  "1fc5f44f-539a-4316-a523-d0adaf39cb5d": {
+    "asset": 1545449384229,
+    "meta": 1545449384249,
+    "relativePath": "scenes\\game.fire"
   }
 }

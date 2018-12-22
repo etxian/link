@@ -21,6 +21,15 @@ cc.Class({
             default: null,
             type: cc.Button
         },
+        hintButton: {
+            default: null,
+            type: cc.Button
+        },
+        scoreLabel: {
+            default: null,
+            type: cc.Label
+        }
+        ,
         _paiSprites: {
             default: [],
             type: [cc.Node]
@@ -35,7 +44,7 @@ cc.Class({
         paiHeight: 90,
 
         paddingLeft: 640,
-        paddingTop: 360,
+        paddingTop: 360, //360,
         solutionx1: -1,
         solutiony1: -1,
         solutionx2: -1,
@@ -64,6 +73,8 @@ cc.Class({
 
     onLoad () {
         cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this)
+        
+        this.hintButton.active = false;
     },
 
     onKeyDown (event) {
@@ -92,7 +103,14 @@ cc.Class({
         cc.sys.localStorage.setItem('pais', pais)
         cc.log('save state')
     },
-
+    onGameHints() {
+        clearTimeout(this.suggestionTimer);
+        this.suggestionTimer = setTimeout(
+            () => { 
+                this.highLightSolution(); 
+            }
+            , 500);
+    },
     onGameStart () {
         this._pais = new Array(this.rows * this.columns)
         this._paiSprites = new Array(this.rows)
@@ -138,7 +156,11 @@ cc.Class({
         this.tutorial.active = false
         this.startButton.active = false
         this.startButton.enabled = false
-        this.startButton.visable = false
+        //this.hintButton.enabled = true;
+        this.hintButton.active = true;
+        this.hintButton.enabled = true;
+        this.hintButton.node.active = true;
+        this.scoreLabel.string = "0";
     },
     highLightSolution() {
         if (this.solutionx1 >= 0 && this.solutionx2 >= 0 && this.solutiony1 >= 0 && this.solutiony2 >= 0) {
@@ -596,12 +618,6 @@ cc.Class({
                         while(this.diedGame()) {
                             this.reshuffle();
                         }
-                        clearTimeout(this.suggestionTimer);
-                        this.suggestionTimer = setTimeout(
-                            () => { 
-                                this.highLightSolution(); 
-                            }
-                            , 10000);
                     }
                 }
             }
