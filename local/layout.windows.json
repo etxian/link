@@ -99,6 +99,32 @@
         "inspector",
         "scene"
       ]
+    },
+    "window-1545525257441": {
+      "main": false,
+      "url": "unpack://static/window.html",
+      "windowType": "dockable",
+      "x": 680,
+      "y": 327,
+      "width": 597,
+      "height": 563,
+      "layout": {
+        "children": [
+          {
+            "active": 0,
+            "children": [
+              "project-settings"
+            ],
+            "height": 526,
+            "type": "panel",
+            "width": 584
+          }
+        ],
+        "type": "dock-v"
+      },
+      "panels": [
+        "project-settings"
+      ]
     }
   },
   "panels": {
@@ -117,13 +143,13 @@
     "project-settings": {
       "x": 680,
       "y": 327,
-      "width": 584,
-      "height": 548
+      "width": 597,
+      "height": 563
     },
     "builder": {
       "x": 710,
       "y": 47,
-      "width": 500,
+      "width": 667,
       "height": 722
     },
     "timeline": {

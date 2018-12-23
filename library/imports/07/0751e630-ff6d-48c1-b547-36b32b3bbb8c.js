@@ -60,6 +60,9 @@ cc.Class({
         _lastPai: null,
         lastX: 0,
         lastY: 0,
+        score: 0,
+        startTime: 0,
+        lastMatchTime: 0,
 
         moveDirection: -1,
         moveStart: 0,
@@ -111,6 +114,8 @@ cc.Class({
         var _this = this;
 
         clearTimeout(this.suggestionTimer);
+        this.score += 15;
+        this.scoreLabel.string = this.score.toString();
         this.suggestionTimer = setTimeout(function () {
             _this.highLightSolution();
         }, 500);
@@ -164,7 +169,23 @@ cc.Class({
         this.hintButton.active = true;
         this.hintButton.enabled = true;
         this.hintButton.node.active = true;
-        this.scoreLabel.string = "0";
+        this.resetScore();
+    },
+    resetScore: function resetScore() {
+        this.score = 0;
+        var d = new Date();
+        var n = Math.floor(d.getTime() / 1000);
+        this.startTime = n;
+        this.lastMatchTime = n;
+        this.scoreLabel.string = this.score.toString();
+    },
+    updateScore: function updateScore() {
+        var d = new Date();
+        var n = Math.floor(d.getTime() / 1000);
+        this.score += n - this.lastMatchTime;
+        this.lastMatchTime = n;
+
+        this.scoreLabel.string = this.score.toString();
     },
     highLightSolution: function highLightSolution() {
         var _this2 = this;
@@ -606,6 +627,8 @@ cc.Class({
                     self._pais[self._lastPai.index] = null;
                     self._pais[currentPai.index] = null;
                     currentPai.color = cc.Color.WHITE;
+
+                    this.updateScore();
 
                     self.count += 2;
                     if (self.count >= self.rows * self.columns) {
