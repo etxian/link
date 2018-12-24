@@ -200,12 +200,12 @@
     "relativePath": "textures/33.png"
   },
   "bb9422d2-bfc2-47ed-939b-791216342f5c": {
-    "asset": 1541660843159,
+    "asset": 1545450936812,
     "meta": 1540188468800,
     "relativePath": "scenes"
   },
   "15a56eef-08da-44c1-8702-5438611d1c54": {
-    "asset": 1545198066776,
+    "asset": 1545450936813,
     "meta": 1540193254081,
     "relativePath": "scripts"
   },
@@ -263,26 +263,6 @@
     "asset": 1541731308080,
     "meta": 1545203322210,
     "relativePath": "textures/fx/flip_05.png"
-  },
-  "3d8ab1e7-bbc1-4988-bd7a-27485e766f79": {
-    "asset": 1541731641637,
-    "meta": 1545203321074,
-    "relativePath": "New AnimationClip.anim"
-  },
-  "82210646-1cf6-4c9d-95dd-9f222db2ecc7": {
-    "asset": 1541750128577,
-    "meta": 1545203322211,
-    "relativePath": "vanish.anim"
-  },
-  "870d4ef5-e364-40c4-9ee2-4007fd4a0ef2": {
-    "asset": 1541733573498,
-    "meta": 1545203322213,
-    "relativePath": "vanish.prefab"
-  },
-  "317847b0-c4b0-415e-bec7-0196139ed84b": {
-    "asset": 1541735402165,
-    "meta": 1545203321895,
-    "relativePath": "scripts/vanishFX.js"
   },
   "71561142-4c83-4933-afca-cb7a17f67053": {
     "asset": 1543305034000,
@@ -504,14 +484,14 @@
     "meta": 1545203321001,
     "relativePath": "prefab/webview.prefab"
   },
-  "0751e630-ff6d-48c1-b547-36b32b3bbb8c": {
-    "asset": 1545450936813,
-    "meta": 1545450939228,
-    "relativePath": "scripts/game.js"
-  },
   "1fc5f44f-539a-4316-a523-d0adaf39cb5d": {
-    "asset": 1545450936812,
-    "meta": 1545450939229,
+    "asset": 1545635214310,
+    "meta": 1545635214324,
     "relativePath": "scenes/game.fire"
+  },
+  "0751e630-ff6d-48c1-b547-36b32b3bbb8c": {
+    "asset": 1545633019383,
+    "meta": 1545633062762,
+    "relativePath": "scripts/game.js"
   }
 }

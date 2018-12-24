@@ -100,32 +100,34 @@
         "scene"
       ]
     },
-    "window-1545106575065": {
+    "window-1545635039250": {},
+    "window-1545635118088": {
       "main": false,
       "url": "unpack://static/window.html",
       "windowType": "dockable",
-      "x": 663,
-      "y": 91,
-      "width": 597,
-      "height": 563,
+      "x": 2232,
+      "y": 340,
+      "width": 584,
+      "height": 548,
       "layout": {
         "children": [
           {
             "active": 0,
             "children": [
-              "preferences"
+              "project-settings"
             ],
-            "height": 541,
+            "height": 526,
             "type": "panel",
-            "width": 597
+            "width": 584
           }
         ],
         "type": "dock-v"
       },
       "panels": [
-        "preferences"
+        "project-settings"
       ]
-    }
+    },
+    "worker": {}
   },
   "panels": {
     "sprite-editor": {
@@ -141,16 +143,16 @@
       "height": 441
     },
     "project-settings": {
-      "x": 680,
-      "y": 327,
+      "x": 2232,
+      "y": 340,
       "width": 584,
       "height": 548
     },
     "builder": {
-      "x": 710,
+      "x": 0,
       "y": 23,
-      "width": 654,
-      "height": 722
+      "width": 1680,
+      "height": 1027
     },
     "timeline": {
       "x": 424,
