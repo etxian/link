@@ -157,9 +157,9 @@ cc.Class({
         this.startButton.active = false
         this.startButton.enabled = false
         //this.hintButton.enabled = true;
-        this.hintButton.active = true;
-        this.hintButton.enabled = true;
-        this.hintButton.node.active = true;
+        this.hintButton.active = false;
+        this.hintButton.enabled = false;
+        this.hintButton.node.active = false;
         this.scoreLabel.string = "0";
     },
     highLightSolution() {
@@ -615,9 +615,9 @@ cc.Class({
                         }
                     } else {
                         cc.log("Check died game:");
-                        while(this.diedGame()) {
-                            this.reshuffle();
-                        }
+                        // while(this.diedGame()) {
+                        //     this.reshuffle();
+                        // }
                     }
                 }
             }
